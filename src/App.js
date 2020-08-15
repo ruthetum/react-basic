@@ -1,28 +1,38 @@
 import React from 'react';
 import axios from "axios";
+import Movie from "./Movie";
 
 class App extends React.Component{
   state = {
     isLoading: true,
-    movies: [],
-    value: ""
+    movies: []
   };
   
   getMoives = async() => {
-    const ID_KEY = 'id';
-    const SECRET_KEY = 'key';
-    const search = this.state.value;
+    const ID_KEY = 'a';
+    const SECRET_KEY = 'a';
+    // const search = this.state.value;
 
-    const {
-      data: {
-        data: {movies}
-      }
-    } = await axios.get('https://openapi.naver.com/v1/search/movie.json' ,{
-      params:{ query: search, display: 20 },
-      headers: { 'X-Naver-Client-Id': ID_KEY, 'X-Naver-Client-Secret': SECRET_KEY }
-    });
-    this.setState({ movies, isLoading:false });
-    console.log(movies);
+    try {
+
+      const {
+        data: { items }
+      } = await axios.get(
+          '/api/v1/search/movie.json' ,{
+          params:{
+            query: "아이언맨",
+            display: 10
+          },
+          headers: {
+            'X-Naver-Client-Id': ID_KEY,
+            'X-Naver-Client-Secret': SECRET_KEY
+          }
+      });
+
+      this.setState({ movies: items, isLoading: false });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   componentDidMount() {
@@ -30,10 +40,20 @@ class App extends React.Component{
   }
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, movies } = this.state;
     return (
       <div>
-        {isLoading ? "Loading..." : "We are ready"}
+        {isLoading ?
+          "Loading..."
+          : movies.map(movie => (
+            <Movie
+              id={movie.link}
+              title={movie.title}
+              poster={movie.image}
+              actors={movie.actor}
+              year={movie.pubDate}
+            />
+          ))}
       </div>
     );
   }
